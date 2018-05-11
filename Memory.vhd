@@ -10,6 +10,7 @@ use ieee.numeric_std.all;
 
 use work.ram2ddrxadc_pkg.all;
 use work.fifo_buffer_pkg.all;
+
 --
 -------------------------------------------------------------------------------
 --
@@ -122,7 +123,7 @@ architecture beh of memory is
 
 	--Internal Counter
 	constant COUNTER_MAX_WRITE		: integer := 52; -- for 260ns cycle
-	constant COUNTER_MAX_READ		: integer := 80; -- for 350ns cycle
+	constant COUNTER_MAX_READ		: integer := 100; -- for 350ns cycle
 	signal start_counter				: std_logic := '0';
 	signal counter						: integer := 0;
 	signal cnt_write					: std_logic := '0';
@@ -448,6 +449,7 @@ begin
 			
 			when STATE_READ_WAIT =>
 				if cnt_read = '1' then -- wait for 210ns
+				    start_counter <= '0';
 				    if ENABLE_16_BIT = 1 then
                         dataIn_read_data <= ram_dq_o; -- 16 bit
                     else

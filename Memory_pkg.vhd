@@ -8,8 +8,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.ram2ddrxadc_pkg.all;
-use work.fifo_buffer_pkg.all;
 --
 -------------------------------------------------------------------------------
 --

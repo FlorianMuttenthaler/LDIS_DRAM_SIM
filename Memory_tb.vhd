@@ -76,23 +76,62 @@ begin
 	stimuli : process
 
 	begin
-
+        
+        rst <= '0';
 		wait for 100 ns;
 		
-		rst <= '0';
 		r_w <= '1';
 		address <= "000000000000000000000000001";
-		--data_in <= "0000000100000001";
-		data_in <= "0000000100000001";
-		wait for 400 ns;
+		if ENABLE_16_BIT = 1 then
+		  data_in <= "0000000100000001";
+		else
+		  data_in <= "00000001";
+		end if;
+		wait for 500 ns;
 		
+        address <= "000000000000000000000000010";
+		if ENABLE_16_BIT = 1 then
+          data_in <= "0000001000000010";
+        else
+          data_in <= "00000010";
+        end if;        
+        wait for 500 ns;
+        
+        address <= "000000000000000000000000011";
+        if ENABLE_16_BIT = 1 then
+          data_in <= "0000001100000011";
+        else
+          data_in <= "00000011";
+        end if;
+        wait for 500 ns;
+
 		r_w <= '0';
 		address <= "000000000000000000000000001";
-		wait for 800 ns;
-		assert data_out = "0000000100000001" report "Valid data output" severity error;
+		wait for 1000 ns;
+		if ENABLE_16_BIT = 1 then
+          assert data_out = "0000000100000001" report "Valid data output" severity error;
+        else
+          assert data_out = "00000001" report "Valid data output" severity error;
+        end if;
 		
-		
-
+		address <= "000000000000000000000000010";
+        wait for 1000 ns;
+        if ENABLE_16_BIT = 1 then
+          assert data_out = "0000001000000010" report "Valid data output" severity error;
+        else
+          assert data_out = "00000010" report "Valid data output" severity error;
+        end if;
+        
+        address <= "000000000000000000000000011";
+        wait for 1000 ns;
+        if ENABLE_16_BIT = 1 then
+          assert data_out = "0000001100000011" report "Valid data output" severity error;
+        else
+          assert data_out = "00000011" report "Valid data output" severity error;
+        end if;
+        
+        wait for 1000 ns;
+        
 		assert false report "end of test" severity failure;
 
 		--  Wait forever; this will finish the simulation.
