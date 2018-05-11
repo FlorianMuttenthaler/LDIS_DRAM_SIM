@@ -122,10 +122,12 @@ architecture beh of memory is
 	signal dataOut_read_add 		: std_logic_vector((DATA_IN_WIDTH * DATA_BASE_WIDTH_ADDR -1) downto 0);
 
 	--Internal Counter
-	constant COUNTER_MAX_WRITE		: integer := 52; -- for 260ns cycle
-	constant COUNTER_MAX_READ		: integer := 100; -- for 350ns cycle
+	constant COUNTER_MAX_WRITE		: integer := 54; -- for 260ns cycle
+	constant COUNTER_MAX_READ		: integer := 120; -- for 350ns cycle
 	signal start_counter				: std_logic := '0';
-	signal counter						: integer := 0;
+--	signal counter_write				: integer := 0;
+--	signal counter_read				: integer := 0;
+    signal counter				: integer := 0;
 	signal cnt_write					: std_logic := '0';
 	signal cnt_read					: std_logic := '0';
 	
@@ -309,14 +311,40 @@ begin
 -- implemtation for counter
 --
 	counter_proc: process (clk_200MHz, counter, rst, start_counter)
+--	counter_proc: process (clk_200MHz, counter_write, counter_read, r_w, rst, start_counter)
 	begin
 		if rst = '1' then -- Reset Counter and signals
 			counter <= 0;
 			cnt_write <= '0';	
 			cnt_read <= '0'; 
-			
+			--counter_write <= 0;
+			--counter_read <= 0;
 		elsif start_counter = '1' then		
 			if rising_edge(clk_200MHz) then
+--				if r_w = '1' then
+--					if counter_write = 0 then
+--						cnt_write <= '0';
+--					end if;
+--					if counter_write = COUNTER_MAX_WRITE then -- 260ns
+--						counter_write <= 0;
+--						cnt_write <= '1';
+--					else
+--						counter_write <= counter_write + 1;
+--					end if;
+--					counter_read <= 0;
+--				else
+--					if counter_read = 0 then
+--						cnt_read <= '0';
+--					end if;
+--					if counter_write = COUNTER_MAX_READ then -- 260ns
+--						counter_read <= 0;
+--						cnt_read <= '1';
+--					else
+--						counter_read <= counter_read + 1;
+--					end if;
+--					counter_write <= 0;					
+--				end if;
+				
 				if counter = 0 then
 					cnt_write <= '0';	-- Clear signals
 					cnt_read <= '0'; 
