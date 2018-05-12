@@ -139,13 +139,12 @@ architecture beh of memory is
 	signal dataOut_read_add 			: std_logic_vector((DATA_IN_WIDTH * DATA_BASE_WIDTH_ADDR -1) downto 0);
 
 	--Internal Counter
-	constant COUNTER_MAX_WRITE			: integer := 54; -- for 260ns cycle
-	constant COUNTER_MAX_READ			: integer := 44; -- for 350ns cycle
+	constant COUNTER_MAX_WRITE			: integer 	:= 54; -- for 270ns cycle
+	constant COUNTER_MAX_READ			: integer 	:= 44; -- for 220ns cycle
 	signal start_counter				: std_logic := '0';
     signal start_counter_next			: std_logic := '0';
---	signal counter						: integer := 0;
-    signal counter_write				: integer := 0;
-	signal counter_read					: integer := 0;
+    signal counter_write				: integer 	:= 0;
+	signal counter_read					: integer 	:= 0;
 	signal cnt_write					: std_logic := '0';
 	signal cnt_read						: std_logic := '0';
 	
@@ -340,24 +339,26 @@ begin
 			cnt_read <= '0'; 
 		elsif start_counter = '1' then		
 			if rising_edge(clk_200MHz) then
-				if r_w = '1' then
+				if r_w = '1' then -- write
 				    if counter_write = 0 then
                         -- Clear signals
                         cnt_write <= '0'; 
                     end if;
-                    if counter_write = COUNTER_MAX_WRITE then -- 350ns
+					
+                    if counter_write = COUNTER_MAX_WRITE then -- 270ns
                         cnt_write <= '1'; 
                         counter_write <= 0;
                     else
                         counter_write <= counter_write + 1;
                     end if;
                     counter_read <= 0;
-				elsif r_w = '0' then
+				elsif r_w = '0' then -- read
 				    if counter_read = 0 then
                         -- Clear signals
                         cnt_read <= '0'; 
                     end if;
-                    if counter_read = COUNTER_MAX_READ then -- 350ns
+					
+                    if counter_read = COUNTER_MAX_READ then -- 220ns
                         cnt_read <= '1'; 
                         counter_read <= 0;
                     else
@@ -492,7 +493,7 @@ begin
 				start_counter_next <= '1'; -- start counter
 				
 			when STATE_WRITE_WAIT =>				
-				if cnt_write = '1' then -- wait for 260ns
+				if cnt_write = '1' then -- wait for 270ns
 					state_next <= STATE_IDLE;
 				end if;
 				
@@ -526,7 +527,7 @@ begin
 				start_counter_next <= '1';
 			
 			when STATE_READ_WAIT =>
-				if cnt_read = '1' then -- wait for 350ns
+				if cnt_read = '1' then -- wait for 220ns
 				    start_counter_next <= '0'; -- stop counter
 					
 					-- writes data to FIFO

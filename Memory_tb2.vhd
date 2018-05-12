@@ -13,12 +13,12 @@ use ieee.numeric_std.all;
 use work.memory_pkg.all;
 
 --  A testbench has no ports.
-entity memory_tb is
-end memory_tb;
+entity memory_tb2 is
+end memory_tb2;
 --
 -------------------------------------------------------------------------------
 --
-architecture beh of memory_tb is
+architecture beh2 of memory_tb2 is
 
 	-- Specifies which entity is bound with the component.
 	for memory_0: memory use entity work.memory;	
@@ -82,30 +82,43 @@ begin
 		
 		--RAM test
 		
-		r_w <= '1';
+		r_w <= '1'; -- write
+		
 		address <= "000000000000000000000000001";
 		data_in <= "00000001";
+		
 		wait for 1000 ns;
 		
         address <= "000000000000000000000000010";
 		data_in <= "00000010";
+		
         wait for 1000 ns;
         
         address <= "000000000000000000000000011";
         data_in <= "00000011";
+		
         wait for 1000 ns;
 
-		r_w <= '0';
+--------------------------------------------------------------------------------
+
+		r_w <= '0'; -- read
+		
 		address <= "000000000000000000000000001";
+		
 		wait for 1000 ns;
+		
         assert data_out = "00000001" report "Valid data output" severity error;
 		
 		address <= "000000000000000000000000010";
+		
         wait for 1000 ns;
+		
         assert data_out = "00000010" report "Valid data output" severity error;
         
         address <= "000000000000000000000000011";
+		
         wait for 1000 ns;
+		
         assert data_out = "00000011" report "Valid data output" severity error;      
         
         
@@ -116,6 +129,6 @@ begin
 
 	end process stimuli;
 
-end beh;
+end beh2;
 --
 -------------------------------------------------------------------------------
