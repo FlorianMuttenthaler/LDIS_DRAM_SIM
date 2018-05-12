@@ -49,7 +49,7 @@ architecture beh of memory is
    	signal ram_a 						: std_logic_vector(26 downto 0) := (others => '0');
    	signal ram_dq_i					: std_logic_vector(15 downto 0) := (others => '0');
 	signal ram_dq_o					: std_logic_vector(15 downto 0);
-   	signal ram_cen						: std_logic := '1';
+   signal ram_cen						: std_logic := '1';
 	signal ram_oen						: std_logic := '1';
 	signal ram_wen						: std_logic := '1';
 	signal ram_ub 						: std_logic := '0';
@@ -389,6 +389,8 @@ begin
 							dataOut_write_add, dataOut_write_data, dataOut_read_add, ram_dq_o, cnt_write, cnt_read)
 	begin
 	
+		state_next <= state;
+		
 		case state is
 		
 			when STATE_IDLE =>
@@ -462,7 +464,6 @@ begin
 			when STATE_RAM_READ =>
 			
 				read_dataOut_add <= '0'; -- disable read for FIFO
-				--write_dataOut_data <= '0'; -- disable write for FIFO
 				
 				-- set control signals
 				ram_cen <= '0'; 
@@ -470,13 +471,7 @@ begin
 				ram_wen <= '1';
 				
 				ram_a <= dataOut_read_add; -- reads address from FIFO
-					
---                if ENABLE_16_BIT = 1 then
---                    dataIn_read_data <= ram_dq_o; -- 16 bit
---                else
---                    dataIn_read_data <= std_logic_vector(resize(unsigned(ram_dq_o), dataIn_read_data'length)); -- 8 bit
---                end if;
-				
+		
 				state_next <= STATE_READ_WAIT;
 				
 				-- start counter
