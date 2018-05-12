@@ -114,15 +114,23 @@ architecture beh of memory is
 	
 	-- empty flags
 	signal empty_write_data			: std_logic;
+	signal empty_write_data_next	: std_logic;
 	signal empty_write_add			: std_logic;
+	signal empty_write_add_next	: std_logic;
 	signal empty_read_data			: std_logic;
+	signal empty_read_data_next	: std_logic;
 	signal empty_read_add			: std_logic;
+	signal empty_read_add_next		: std_logic;
 	
 	-- full flags
 	signal full_write_data			: std_logic;
+	signal full_write_data_next	: std_logic;
 	signal full_write_add			: std_logic;
+	signal full_write_add_next 	: std_logic;
 	signal full_read_data			: std_logic;
+	signal full_read_data_next		: std_logic;
 	signal full_read_add				: std_logic;
+	signal full_read_add_next		: std_logic;
 	
 	-- dataOut signals
 	signal dataOut_write_data 		: std_logic_vector((DATA_IN_WIDTH * DATA_BASE_WIDTH_DATA -1) downto 0);
@@ -204,8 +212,8 @@ begin
 			dataIn 			=> address,
 			read 			=> read_dataIn,
 			dataOut 		=> dataOut_write_add,
-			empty 			=> empty_write_add,
-			full 			=> full_write_add
+			empty 			=> empty_write_add_next,
+			full 			=> full_write_add_next
 		);
 	
 	-- FIFO for addresses, read operation
@@ -224,8 +232,8 @@ begin
 			dataIn 			=> address,
 			read 			=> read_dataOut_add,
 			dataOut 		=> dataOut_read_add,
-			empty 			=> empty_read_add,
-			full 			=> full_read_add
+			empty 			=> empty_read_add_next,
+			full 			=> full_read_add_next
 		);
 		
 	-- FIFO for data, write operation
@@ -244,8 +252,8 @@ begin
 			dataIn 			=> data_in,
 			read 			=> read_dataIn,
 			dataOut 		=> dataOut_write_data,
-			empty 			=> empty_write_data,
-			full 			=> full_write_data
+			empty 			=> empty_write_data_next,
+			full 			=> full_write_data_next
 		);
 		
 	-- FIFO for data, read operation
@@ -264,8 +272,8 @@ begin
 			dataIn 			=> dataIn_read_data,
 			read 			=> read_dataOut_data,
 			dataOut 		=> dataOut_read_data,
-			empty 			=> empty_read_data,
-			full 			=> full_read_data
+			empty 			=> empty_read_data_next,
+			full 			=> full_read_data_next
 		);
 
 -------------------------------------------------------------------------------
@@ -286,8 +294,6 @@ begin
 			if r_w = '1' then -- write
 				if (full_write_data = '0' and full_write_add = '0' and (address_cpy /= address or data_cpy /= data_in)) then
 					write_dataIn <= '1'; -- writes address and data to FIFO
-					--dataIn_write_data <= data_in;
-					--dataIn_write_add <= address;
 					--Copies
 					data_cpy <= data_in;
 					address_cpy <= address;
@@ -297,7 +303,6 @@ begin
 			else -- read
 				if full_read_add = '0' and address_cpy_read /= address then
 					write_dataOut_add <= '1'; -- writes address to FIFO
-					--dataIn_read_add <= address;
 					--Copies
 					address_cpy_read <= address;
 				else
@@ -358,17 +363,34 @@ begin
 			state <= STATE_IDLE;
 			
 		elsif rising_edge(clk_200MHz) then
-			state 	<= state_next;
-			ram_cen	<= ram_cen_next; 
-			ram_oen	<= ram_oen_next;
-			ram_wen	<= ram_wen_next;
-			ram_a    <= ram_a_next;
-			ram_dq_i <= ram_dq_i_next;
-			dataIn_read_data <= dataIn_read_data_next;
-			write_dataOut_data <= write_dataOut_data_next;
-			read_dataIn <= read_dataIn_next;
-			read_dataOut_add <= read_dataOut_add_next;
-			start_counter <= start_counter_next;
+			-- sync state machine
+			state 					<= state_next;
+			
+			-- sync control signals
+			ram_cen					<= ram_cen_next; 
+			ram_oen					<= ram_oen_next;
+			ram_wen					<= ram_wen_next;
+			
+			-- sync signals
+			ram_a    				<= ram_a_next;
+			ram_dq_i 				<= ram_dq_i_next;
+			dataIn_read_data 		<= dataIn_read_data_next;
+			write_dataOut_data	<= write_dataOut_data_next;
+			read_dataIn 			<= read_dataIn_next;
+			read_dataOut_add 		<= read_dataOut_add_next;
+			start_counter 			<= start_counter_next;
+			
+			-- sync empty flags
+			empty_write_data 		<= empty_write_data_next;
+			empty_write_add 		<= empty_write_add_next;
+			empty_read_data 		<= empty_read_data_next;
+			empty_read_add 		<= empty_read_add_next;
+			
+			-- sync full flags
+			full_write_data 		<= full_write_data_next;
+			full_write_add 		<= full_write_add_next;
+			full_read_data 		<= full_read_data_next;
+			full_read_add 			<= full_read_add_next;
 		end if;
 	end process sync_proc_state;
 				
@@ -384,17 +406,18 @@ begin
 							read_dataIn, read_dataOut_add, start_counter)
 	begin
 	
-		state_next 		<= state;
-		ram_cen_next	<= ram_cen; 
-		ram_oen_next	<= ram_oen;
-		ram_wen_next	<= ram_wen;
-		ram_a_next		<= ram_a;
-		ram_dq_i_next	<= ram_dq_i;
-		dataIn_read_data_next <= dataIn_read_data;
-		write_dataOut_data_next <= write_dataOut_data;
-		read_dataIn_next <= read_dataIn;
-		read_dataOut_add_next <= read_dataOut_add;
-		start_counter_next <= start_counter;
+		-- prevent latches for state machine
+		state_next 					<= state;
+		ram_cen_next				<= ram_cen; 
+		ram_oen_next				<= ram_oen;
+		ram_wen_next				<= ram_wen;
+		ram_a_next					<= ram_a;
+		ram_dq_i_next				<= ram_dq_i;
+		dataIn_read_data_next 	<= dataIn_read_data;
+		write_dataOut_data_next	<= write_dataOut_data;
+		read_dataIn_next 			<= read_dataIn;
+		read_dataOut_add_next	<= read_dataOut_add;
+		start_counter_next 		<= start_counter;
 		
 		case state is
 		
@@ -405,9 +428,9 @@ begin
 				write_dataOut_data_next <= '0'; -- disable write for FIFO
 			
 				-- reset control signals
---				ram_cen_next <= '1'; 
---				ram_oen_next <= '1';
---				ram_wen_next <= '1';
+				ram_cen_next <= '1'; 
+				ram_oen_next <= '1';
+				ram_wen_next <= '1';
 			
 				if r_w = '1' then
 					state_next <= STATE_RAM_WRITE_FIFO;
@@ -452,10 +475,6 @@ begin
 			when STATE_WRITE_WAIT =>				
 				if cnt_write = '1' then -- wait for 260ns
 					state_next <= STATE_IDLE;
-					
-					ram_cen_next <= '1'; 
-					ram_oen_next <= '1';
-					ram_wen_next <= '1';
 				end if;
 				
 			when STATE_RAM_READ_FIFO =>
@@ -495,10 +514,6 @@ begin
                         dataIn_read_data_next <= ram_dq_o(15 downto 8); -- std_logic_vector(resize(unsigned(ram_dq_o), dataIn_read_data'length)); -- 8 bit
                     end if;
 					state_next <= STATE_IDLE;
-					
-					ram_cen_next <= '1'; 
-					ram_oen_next <= '1';
-					ram_wen_next <= '1';
 				end if;
 				
 			when others =>

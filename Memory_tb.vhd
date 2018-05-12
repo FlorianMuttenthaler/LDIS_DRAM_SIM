@@ -219,7 +219,9 @@ begin
 		  
         assert mem_ready = '0' report "Buffer overflow" severity error;
         
-         wait for 20000 ns;
+         wait for 10000 ns;
+			
+		------------------------------------------------------------------
         
         r_w <= '0';
         address <= "000000000000000000000000100";
