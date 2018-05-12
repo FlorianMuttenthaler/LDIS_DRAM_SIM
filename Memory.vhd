@@ -394,6 +394,8 @@ begin
 			when STATE_IDLE =>
 				-- stop counter
 				start_counter <= '0';
+				
+				write_dataOut_data <= '0'; -- disable write for FIFO
 			
 				-- reset control signals
 				ram_cen <= '1'; 
@@ -419,6 +421,8 @@ begin
                 end if;
                 
 			when STATE_RAM_WRITE =>
+			
+				read_dataIn <= '0'; -- disable read for FIFO
 			
 				-- set control signals
 				ram_cen <= '0'; 
@@ -457,6 +461,9 @@ begin
                        
 			when STATE_RAM_READ =>
 			
+				read_dataOut_add <= '0'; -- disable read for FIFO
+				--write_dataOut_data <= '0'; -- disable write for FIFO
+				
 				-- set control signals
 				ram_cen <= '0'; 
 				ram_oen <= '0';

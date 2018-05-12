@@ -200,7 +200,7 @@ begin
           --data_in <= "00000010";
         end if;        
         wait for 10 ns;
-        
+		  
         address <= "000000000000000000000001100";
         if ENABLE_16_BIT = 1 then
           data_in <= "0000011000001100";
@@ -208,7 +208,7 @@ begin
           --data_in <= "00000011";
         end if;
         wait for 10 ns;
-        
+		  
         assert mem_ready = '0' report "Buffer overflow" severity error;
         
          wait for 10000 ns;
@@ -287,7 +287,6 @@ begin
         wait for 10 ns;
         
         assert mem_ready = '0' report "Buffer overflow" severity error;
-
         
         wait for 10000 ns;
         
