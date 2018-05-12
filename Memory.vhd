@@ -140,10 +140,12 @@ architecture beh of memory is
 
 	--Internal Counter
 	constant COUNTER_MAX_WRITE			: integer := 54; -- for 260ns cycle
-	constant COUNTER_MAX_READ			: integer := 70; -- for 350ns cycle
+	constant COUNTER_MAX_READ			: integer := 44; -- for 350ns cycle
 	signal start_counter				: std_logic := '0';
-   signal start_counter_next			: std_logic := '0';
-	signal counter						: integer := 0;
+    signal start_counter_next			: std_logic := '0';
+--	signal counter						: integer := 0;
+    signal counter_write				: integer := 0;
+	signal counter_read					: integer := 0;
 	signal cnt_write					: std_logic := '0';
 	signal cnt_read						: std_logic := '0';
 	
@@ -329,29 +331,39 @@ begin
 -- Process counter_proc: triggered by clk_200MHz, counter, rst, start_counter
 -- implemtation for counter
 --
-	counter_proc: process (clk_200MHz, counter, rst, start_counter)
+	counter_proc: process (clk_200MHz, counter_write, counter_read, rst, start_counter)
 	begin
 		if rst = '1' then -- Reset Counter and signals
-			counter <= 0;
+			counter_write <= 0;
+			counter_read <= 0;
 			cnt_write <= '0';	
 			cnt_read <= '0'; 
 		elsif start_counter = '1' then		
 			if rising_edge(clk_200MHz) then
-				
-				if counter = 0 then
-					-- Clear signals
-					cnt_write <= '0'; 
-					cnt_read <= '0'; 
-				end if;
-				
-				if counter = COUNTER_MAX_READ then -- 350ns
-					cnt_read <= '1'; 
-					counter <= 0;
-				elsif counter = COUNTER_MAX_WRITE then -- 260ns
-					cnt_write <= '1';	
-					counter <= counter + 1;					
-				else
-					counter <= counter + 1;
+				if r_w = '1' then
+				    if counter_write = 0 then
+                        -- Clear signals
+                        cnt_write <= '0'; 
+                    end if;
+                    if counter_write = COUNTER_MAX_WRITE then -- 350ns
+                        cnt_write <= '1'; 
+                        counter_write <= 0;
+                    else
+                        counter_write <= counter_write + 1;
+                    end if;
+                    counter_read <= 0;
+				elsif r_w = '0' then
+				    if counter_read = 0 then
+                        -- Clear signals
+                        cnt_read <= '0'; 
+                    end if;
+                    if counter_read = COUNTER_MAX_READ then -- 350ns
+                        cnt_read <= '1'; 
+                        counter_read <= 0;
+                    else
+                        counter_read <= counter_read + 1;
+                    end if;
+                    counter_write <= 0;
 				end if;
 			end if;
 		end if;
